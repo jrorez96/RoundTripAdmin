@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="flex min-h-screen bg-gray-100">
+    <!-- Sidebar -->
+    <div class="w-64 bg-blue-600 text-white">
+        <div
+            class="p-4 font-bold text-xl text-center border-b border-blue-500">Admin
+            Panel</div>
+            <ul class="mt-4">
+                <li class="px-4 py-2 hover:bg-blue-500 cursor-pointer">
+                    <a href="index.html" class="block">Dashboard</a>
+                </li>
+                <li class="px-4 py-2 hover:bg-blue-500 cursor-pointer">
+                    <a href="reservas.html" class="block">Reservas</a>
+                </li>
+                <li class="px-4 py-2 hover:bg-blue-500 cursor-pointer">
+                    <a href="reservasCompletas.html" class="block">Reservas Completas</a>
+                </li>
+                <li class="px-4 py-2 hover:bg-blue-500 cursor-pointer">
+                    <a href="Vehiculos.html" class="block">Vehículos</a>
+                </li>
+                <li class="px-4 py-2 hover:bg-blue-500 cursor-pointer">
+                    <a href="seguros.html" class="block">Seguros</a>
+                </li>
+                <li class="px-4 py-2 hover:bg-blue-500 cursor-pointer">
+                    <a href="Usuarios.html" class="block">Usuarios</a>
+                </li>
+                <li class="px-4 py-2 hover:bg-red-600 mt-4 cursor-pointer">
+                    <a href="login.html" class="block">Salir</a>
+                </li>
+            </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6">
+        <div class="mb-4 flex justify-between">
+            <input type="text" id="search" placeholder="Buscar por marca" class="p-2 border border-gray-300 rounded w-1/3">
+            <button id="addVehicleBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Agregar Vehículo</button>
+        </div>
+
+        <!-- Tabla de Vehículos -->
+        <table class="w-full border-collapse border border-gray-300">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th class="border border-gray-300 px-4 py-2">IdVehiculo</th>
+                    <th class="border border-gray-300 px-4 py-2">Marca</th>
+                    <th class="border border-gray-300 px-4 py-2">Modelo</th>
+                    <th class="border border-gray-300 px-4 py-2">Año</th>
+                    <th class="border border-gray-300 px-4 py-2">Placa</th>
+                    <th class="border border-gray-300 px-4 py-2">Color</th>
+                    <th class="border border-gray-300 px-4 py-2">Tipo</th>
+                    <th class="border border-gray-300 px-4 py-2">Precio/Día</th>
+                    <th class="border border-gray-300 px-4 py-2">Disponible</th>
+                    <th class="border border-gray-300 px-4 py-2">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="vehicleTableBody"></tbody>
+        </table>
+    </div>
+
+    <!-- Popup Formulario Agregar Vehículo -->
+    <div id="vehiclePopup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-4 text-gray-700">Agregar Vehículo</h2>
+            <form id="vehicleForm">
+                <input type="text" id="IdVehiculo" placeholder="Vehiculo" class="w-full p-2 mb-2 border border-gray-300 rounded">
+                <input type="text" id="marca" placeholder="Marca" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
+                <input type="text" id="modelo" placeholder="Modelo" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
+                <input type="number" id="year" placeholder="Año" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
+                <input type="text" id="placa" placeholder="Placa" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
+                <input type="text" id="color" placeholder="Color" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
+                <select id="categoria" class="w-full p-2 mb-2 border border-gray-300 rounded" required></select>
+                <input type="number" id="precioDia" placeholder="Precio por Día" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
+                <input type="number" id="disponible" placeholder="Disponible 0 y 1 si no esta disponible" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
+                <input type="text" id="imagen" placeholder="Nombre de la imagen" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded w-full mt-4">Guardar</button>
+            </form>
+            <button onclick="closePopup()" class="mt-4 text-red-600 font-bold w-full">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchVehicles();
+            fetchCategories();
+            document.getElementById("search").addEventListener("input", filterVehicles);
+            document.getElementById("addVehicleBtn").addEventListener("click", function () {
+            document.getElementById("vehiclePopup").classList.remove("hidden");
+            });
+            document.getElementById("vehicleForm").addEventListener("submit", addVehicle);
+        });
+
+        function fetchCategories() {
+    fetch("https://www.rtrentacar.somee.com/Categoria")
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById("categoria");
+            select.innerHTML = ""; // Limpiar antes de agregar opciones
+            data.forEach(cat => {
+                let option = document.createElement("option");
+                option.value = cat.idCategoria; // Asegúrate de usar idCategoria
+                option.textContent = cat.categoria;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error al cargar categorias:", error));
+}
+
+
+        function closePopup() {
+            document.getElementById("vehiclePopup").classList.add("hidden");
+        }
+
+        function addVehicle(event) {
+            event.preventDefault();
+            const newVehicle = {
+                marca: document.getElementById("marca").value,
+                modelo: document.getElementById("modelo").value,
+                year: document.getElementById("year").value,
+                placa: document.getElementById("placa").value,
+                color: document.getElementById("color").value,
+                tipo: document.getElementById("categoria").value,
+                precioDia: document.getElementById("precioDia").value,
+                disponible: document.getElementById("disponible").value,
+                imagen: document.getElementById("imagen").value
+            };
+
+            fetch("https://www.rtrentacar.somee.com/Vehiculos", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newVehicle)
+            })
+            .then(response => response.json())
+            .then(() => {
+                closePopup();
+                fetchVehicles();
+            })
+            .catch(error => console.error("Error al agregar vehículo:", error));
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            fetchVehicles();
+            document.getElementById("search").addEventListener("input", filterVehicles);
+        });
+
+        function fetchVehicles() {
+            fetch("https://www.rtrentacar.somee.com/Vehiculos")
+                .then(response => response.json())
+                .then(data => {
+                    window.vehicleData = data;
+                    renderVehicleTable(data);
+                })
+                .catch(error => console.error("Error al cargar los vehículos:", error));
+        }
+
+        function renderVehicleTable(data) {
+            const tableBody = document.getElementById("vehicleTableBody");
+            tableBody.innerHTML = "";
+            data.forEach(vehicle => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td class='border border-gray-300 px-4 py-2'>${vehicle.idVehiculo}</td>
+                    <td class='border border-gray-300 px-4 py-2'>${vehicle.marca}</td>
+                    <td class='border border-gray-300 px-4 py-2'>${vehicle.modelo}</td>
+                    <td class='border border-gray-300 px-4 py-2'>${vehicle.year}</td>
+                    <td class='border border-gray-300 px-4 py-2'>${vehicle.placa}</td>
+                    <td class='border border-gray-300 px-4 py-2'>${vehicle.color}</td>
+                    <td class='border border-gray-300 px-4 py-2'>${vehicle.tipo}</td>
+                    <td class='border border-gray-300 px-4 py-2'>${vehicle.precioDia}</td>
+                    <td class='border border-gray-300 px-4 py-2'>${vehicle.disponible ? 'Sí' : 'No'}</td>
+                    <td class='border border-gray-300 px-4 py-2'>
+                        <button class='bg-yellow-500 text-white px-2 py-1 rounded' onclick='editVehicle(${vehicle.idVehiculo})'>Editar</button>
+                        <button class='bg-red-600 text-white px-2 py-1 rounded' onclick='deleteVehicle(${vehicle.idVehiculo})'>Eliminar</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function filterVehicles() {
+            const searchTerm = document.getElementById("search").value.toLowerCase();
+            const filteredVehicles = window.vehicleData.filter(vehicle => 
+                vehicle.marca.toLowerCase().includes(searchTerm));
+            renderVehicleTable(filteredVehicles);
+        }
+
+        function editVehicle(id) {
+            const vehicle = window.vehicleData.find(v => v.idVehiculo === id);
+            document.getElementById("IdVehiculo").value = vehicle.idVehiculo;
+            document.getElementById("marca").value = vehicle.marca;
+            document.getElementById("modelo").value = vehicle.modelo;
+            document.getElementById("year").value = vehicle.year;
+            document.getElementById("placa").value = vehicle.placa;
+            document.getElementById("color").value = vehicle.color;
+            document.getElementById("categoria").value = vehicle.tipo;
+            document.getElementById("precioDia").value = vehicle.precioDia;
+            document.getElementById("disponible").value = vehicle.disponible;
+            document.getElementById("vehiclePopup").classList.remove("hidden");
+        }
+
+        function deleteVehicle(id) {
+            fetch(`https://www.rtrentacar.somee.com/Vehiculos/${id}`, {
+                method: "DELETE"
+            })
+            .then(() => fetchVehicles())
+            .catch(error => console.error("Error al eliminar vehículo:", error));
+        }
+    </script>
+</body>
+</html>
