@@ -100,7 +100,7 @@
         });
 
         function fetchDealer() {
-            fetch("https://localhost:7184/Dealer")
+            fetch("https://www.rtrentacar.somee.com/Dealer")
                 .then(response => response.json())
                 .then(data => {
                     window.seguroData = data;
@@ -141,7 +141,7 @@
                 codigo: document.getElementById("Codigo").value
             };
 
-            fetch("https://localhost:7184/Dealer", {
+            fetch("https://www.rtrentacar.somee.com/Dealer", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(newDealer)
@@ -163,7 +163,7 @@
         }
 
         function deleteVehicle(id) {
-            fetch(`https://localhost:7184/Dealer/${id}`, {
+            fetch(`https://www.rtrentacar.somee.com/Dealer/${id}`, {
                 method: "DELETE"
             })
             .then(() => fetchDealer())
