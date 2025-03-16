@@ -45,102 +45,82 @@
         </div>
 
         <!-- Main Content -->
-        <!-- Main Content -->
     <div class="flex-1 p-6">
         <div class="mb-4 flex justify-between">
-            <input type="text" id="search" placeholder="Buscar Nombre" class="p-2 border border-gray-300 rounded w-1/3">
-            <button id="addSeguroBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Agregar Seguro</button>
+            <input type="text" id="search" placeholder="Buscar por Nombre" class="p-2 border border-gray-300 rounded w-1/3">
+            <button id="addDealerBtn" class="bg-blue-600 text-white px-4 py-2 rounded">Agregar Dealer</button>
         </div>
 
         <!-- Tabla de Vehículos -->
         <table class="w-full border-collapse border border-gray-300">
             <thead>
                 <tr class="bg-gray-200">
-                    <th class="border border-gray-300 px-4 py-2">IdSeguro</th>
-                    <th class="border border-gray-300 px-4 py-2">Seguro</th>
-                    <th class="border border-gray-300 px-4 py-2">Costo</th>
+                    <th class="border border-gray-300 px-4 py-2">IdDealer</th>
+                    <th class="border border-gray-300 px-4 py-2">Nombre</th>
+                    <th class="border border-gray-300 px-4 py-2">Codigo</th>
                     <th class="border border-gray-300 px-4 py-2">Acciones</th>
                 </tr>
             </thead>
-            <tbody id="seguroTableBody"></tbody>
+            <tbody id="dealerTableBody"></tbody>
         </table>
     </div>
 
     <!-- Popup Formulario Agregar Vehículo -->
-    <div id="seguroPopup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+    <div id="DealerPopup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
         <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 class="text-2xl font-bold mb-4 text-gray-700">Agregar Seguro</h2>
-            <form id="seguroForm">
-                <input type="text" id="Idseguro" placeholder="Seguro" class="w-full p-2 mb-2 border border-gray-300 rounded">
-                <input type="text" id="seguro" placeholder="Nombre Seguro" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
-                <input type="number" id="costo" placeholder="Costo seguro" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
+            <h2 class="text-2xl font-bold mb-4 text-gray-700">Agregar Dealer</h2>
+            <form id="SeguroForm">
+                <input type="text" id="IdDealer" placeholder="Vehiculo" class="w-full p-2 mb-2 border border-gray-300 rounded">
+                <input type="text" id="Nombre" placeholder="Nombre" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
+                <input type="text" id="Codigo" placeholder="Codigo" class="w-full p-2 mb-2 border border-gray-300 rounded" required>
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded w-full mt-4">Guardar</button>
             </form>
             <button onclick="closePopup()" class="mt-4 text-red-600 font-bold w-full">Cancelar</button>
         </div>
     </div>
-    </body>
+
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            fetchSeguros();
+            fetchDealer();
             document.getElementById("search").addEventListener("input", filterSeguro);
-            document.getElementById("addSeguroBtn").addEventListener("click", function () {
-            document.getElementById("seguroPopup").classList.remove("hidden");
+            document.getElementById("addDealerBtn").addEventListener("click", function () {
+            document.getElementById("DealerPopup").classList.remove("hidden");
             });
-            document.getElementById("seguroForm").addEventListener("submit", addSeguro);
+            document.getElementById("SeguroForm").addEventListener("submit", addDealer);
         });
 
         function closePopup() {
-            document.getElementById("seguroPopup").classList.add("hidden");
-        }
-
-        function addSeguro(event) {
-            event.preventDefault();
-            const newSeguro = {
-                seguro: document.getElementById("seguro").value,
-                costo: document.getElementById("costo").value
-            };
-
-            fetch("https://www.rtrentacar.somee.com/Vehiculos", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newSeguro)
-            })
-            .then(response => response.json())
-            .then(() => {
-                closePopup();
-                fetchSeguros();
-            })
-            .catch(error => console.error("Error al agregar vehículo:", error));
+            document.getElementById("DealerPopup").classList.add("hidden");
         }
 
         document.addEventListener("DOMContentLoaded", function() {
-            fetchSeguros();
+            fetchDealer();
             document.getElementById("search").addEventListener("input", filterSeguro);
         });
 
-        function fetchSeguros() {
-            fetch("https://www.rtrentacar.somee.com/Seguros/seguros")
+        function fetchDealer() {
+            fetch("https://localhost:7184/Dealer")
                 .then(response => response.json())
                 .then(data => {
                     window.seguroData = data;
                     renderSeguroTable(data);
                 })
-                .catch(error => console.error("Error al cargar los vehículos:", error));
+                .catch(error => console.error("Error al cargar los dealres:", error));
         }
 
         function renderSeguroTable(data) {
-            const tableBody = document.getElementById("seguroTableBody");
+            const tableBody = document.getElementById("dealerTableBody");
             tableBody.innerHTML = "";
-            data.forEach(seguro => {
+            data.forEach(dealer => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                    <td class='border border-gray-300 px-4 py-2'>${seguro.idSeguro}</td>
-                    <td class='border border-gray-300 px-4 py-2'>${seguro.seguro}</td>
-                    <td class='border border-gray-300 px-4 py-2'>${seguro.costo}</td>
+                    <td class='border border-gray-300 px-4 py-2'>${dealer.idDealer}</td>
+                    <td class='border border-gray-300 px-4 py-2'>${dealer.nombre}</td>
+                    <td class='border border-gray-300 px-4 py-2'>${dealer.codigo}</td>
                     <td class='border border-gray-300 px-4 py-2'>
-                        <button class='bg-yellow-500 text-white px-2 py-1 rounded' onclick='editSeguro(${seguro.idSeguro})'>Editar</button>
-                        <button class='bg-red-600 text-white px-2 py-1 rounded' onclick='deleteVehicle(${seguro.idSeguro})'>Eliminar</button>
+                        <button class='bg-yellow-500 text-white px-2 py-1 rounded' onclick='editDealer(${dealer.idDealer})'>Editar</button>
+                        <button class='bg-red-600 text-white px-2 py-1 rounded' onclick='deleteVehicle(${dealer.idDealer})'>Eliminar</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
@@ -154,41 +134,42 @@
                 renderSeguroTable(filteredSeguro);
         }
 
-        function addSeguro(event) {
+        function addDealer(event) {
             event.preventDefault();
-            const newSeguro = {
-                seguro: document.getElementById("seguro").value,
-                costo: document.getElementById("costo").value
+            const newDealer = {
+                nombre: document.getElementById("Nombre").value,
+                codigo: document.getElementById("Codigo").value
             };
 
-            fetch("https://www.rtrentacar.somee.com/Seguros", {
+            fetch("https://localhost:7184/Dealer", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newSeguro)
+                body: JSON.stringify(newDealer)
             })
             .then(response => response.json())
             .then(() => {
                 closePopup();
-                fetchSeguros();
+                fetchDealer();
             })
-            .catch(error => console.error("Error al agregar vehículo:", error));
+            .catch(error => console.error("Error al agregar dealer:", error));
         }
 
-        function editSeguro(id) {
-            const seguro = window.seguroData.find(s => s.idSeguro === id);
-            document.getElementById("Idseguro").value = seguro.idSeguro;
-            document.getElementById("seguro").value = seguro.seguro;
-            document.getElementById("costo").value = seguro.costo;
-            document.getElementById("seguroPopup").classList.remove("hidden");
+        function editDealer(id) {
+            const dealer = window.seguroData.find(d => d.idDealer === id);
+            document.getElementById("IdDealer").value = dealer.idDealer;
+            document.getElementById("Nombre").value = dealer.nombre;
+            document.getElementById("Codigo").value = dealer.codigo;
+            document.getElementById("DealerPopup").classList.remove("hidden");
         }
 
         function deleteVehicle(id) {
-            fetch(`https://www.rtrentacar.somee.com/Vehiculos/${id}`, {
+            fetch(`https://localhost:7184/Dealer/${id}`, {
                 method: "DELETE"
             })
-            .then(() => fetchVehicles())
-            .catch(error => console.error("Error al eliminar seguro:", error));
+            .then(() => fetchDealer())
+            .catch(error => console.error("Error al eliminar dealer:", error));
         }
     </script>
+    </body>
 
 </html>
